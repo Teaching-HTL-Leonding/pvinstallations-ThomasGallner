@@ -76,15 +76,9 @@ app.MapGet("/installations/{id}/reports", async (int id, DateTime timestamp, int
 
     var endTimeStamp = timestamp.AddMinutes(duration);
 
-    var reports = dbContext.ProductionReports.Where(r => r.PvInstallationId == id);
-    float producedWattageSum = 0;
-    foreach (ProductionReport report in reports)
-    {
-        if (report.Timestamp >= timestamp && report.Timestamp <= endTimeStamp)
-        {
-            producedWattageSum += report.ProducedWattage;
-        }
-    }
+    float producedWattageSum = await dbContext.ProductionReports.
+        Where(r => r.PvInstallationId == id && r.Timestamp >= timestamp && r.Timestamp <= endTimeStamp).
+        SumAsync(r => r.ProducedWattage);
 
     return Results.Ok(producedWattageSum);
 });
